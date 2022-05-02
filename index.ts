@@ -126,6 +126,31 @@ client.on("messageCreate", (message) => {
 
     scrapeProduct("https://www.google.com/search?q=takeaways+near+" + postcode);
   }
+  if (message.content.substring(0, 5) === "!wiki") {
+        let wikiSearch = message.content.slice(5);
+
+        const puppeteer = require('puppeteer');
+
+        async function scrapeProduct(url: string) {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+            await page.goto(url);
+            const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/p[2]');
+            const txt = await el.getProperty('textContent');
+            const rawTxt = await txt.jsonValue();
+
+            let resp = rawTxt.replaceAll(/\[(.+?)\]/g, '');
+
+            browser.close();
+
+            message.reply({
+                content: resp,
+            });
+        }
+        wikiSearch = wikiSearch.split('.').join('x');
+
+        scrapeProduct("https://en.wikipedia.org/wiki/" + wikiSearch);
+    }
 });
 
 client.login(process.env.TOKEN);
