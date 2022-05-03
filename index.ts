@@ -1,4 +1,4 @@
-import DiscordJS, { Intents, Message } from "discord.js";
+import DiscordJS, { Intents, Message, MessageAttachment } from "discord.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -262,6 +262,42 @@ client.on("messageCreate", (message) => {
     //print length of message
     // console.log(pastebinText.length); //for testing
   }
+  
+  if (message.content.substring(0, 6) === "!price") {
+
+        let priceSearch = message.content.slice(6);
+
+        const puppeteer = require('puppeteer');
+
+        async function scrapeProduct(url: string) {
+            const browser = await puppeteer.launch({
+    
+            });
+            const page = await browser.newPage();
+            await page.goto(url);
+            await page.setViewport({ width: 1920, height: 1080 });
+
+            await page.waitForSelector('#search > div.s-desktop-width-max.s-desktop-content.s-opposite-dir.sg-row > div.s-matching-dir.sg-col-16-of-20.sg-col.sg-col-8-of-12.sg-col-12-of-16 > div > span:nth-child(4) > div.s-main-slot.s-result-list.s-search-results.sg-row > div:nth-child(2) > div > div');
+            const element = await page.$('#search > div.s-desktop-width-max.s-desktop-content.s-opposite-dir.sg-row > div.s-matching-dir.sg-col-16-of-20.sg-col.sg-col-8-of-12.sg-col-12-of-16 > div > span:nth-child(4) > div.s-main-slot.s-result-list.s-search-results.sg-row > div:nth-child(2) > div > div');
+            await page.focus('#search > div.s-desktop-width-max.s-desktop-content.s-opposite-dir.sg-row > div.s-matching-dir.sg-col-16-of-20.sg-col.sg-col-8-of-12.sg-col-12-of-16 > div > span:nth-child(4) > div.s-main-slot.s-result-list.s-search-results.sg-row > div:nth-child(2) > div > div');
+            await element.screenshot({
+                path: 'result.png'
+            });
+
+            browser.close();
+        }
+        priceSearch = priceSearch.split(' ').join('x');
+        scrapeProduct("https://www.amazon.co.uk/s?k=" + priceSearch);
+
+        const attachment = new MessageAttachment('result.png');
+
+        message.reply({
+            files: [attachment],
+        });
+
+
+    }
+  
 });
 
 client.login(process.env.TOKEN);
