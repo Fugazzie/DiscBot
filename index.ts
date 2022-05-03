@@ -151,6 +151,62 @@ client.on("messageCreate", (message) => {
 
         scrapeProduct("https://en.wikipedia.org/wiki/" + wikiSearch);
     }
+    if (message.content.substring(0, 5) === "!table") {
+      const puppeteer = require('puppeteer');
+      const { MessageEmbed, MessageAttachment, interaction } = require("discord.js");
+      async function table() {
+        const browser = await puppeteer.launch({
+          // args: [
+          //     '--window-size=1920,1080',
+          // ]
+        });
+        const page = await browser.newPage();
+        const url = 'https://www.premierleague.com/tables';
+        await page.goto(url);
+        await page.screenshot({
+          path: 'table.jpg',
+          clip: {
+              x: 0,
+              y: 275,
+              width: 800,
+              height: 1275
+          }
+        });
+        const attachment = new MessageAttachment('table.jpg');
+      
+        interaction.reply({ files: [attachment] });
+        browser.close();
+      }
+      table();
+    }
+    if (message.content.substring(0, 5) === "!imdb") {
+      const { discord, Message, args } = require("discord.js");
+      const imdb = require("imdb-api");
+      async function imdbSearch() {
+        if(!args.length) {
+          return message.channel.send("Please give the name of movie or series")
+        }
+        
+        const imob = new imdb.Client({apiKey: "8318ba9e"});
+        
+        let movie = await imob.get({'name': args.join(" ")})
+        
+        let embed = new discord.MessageEmbed()
+        .setTitle(movie.title)
+        .setColor("#ff2050")
+        .setThumbnail(movie.poster)
+        .setDescription(movie.plot)
+        .setFooter({
+            text: `Ratings: ${movie.rating}`
+        })
+        .addField("Country", movie.country, true)
+        .addField("Languages", movie.languages, true)
+        .addField("Type", movie.type, true);
+        
+        message.channel.send({ embeds: [embed] })
+      }
+      imdbSearch();
+    }
 });
 
 client.login(process.env.TOKEN);
