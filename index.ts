@@ -207,6 +207,53 @@ client.on("messageCreate", (message) => {
       }
       imdbSearch();
     }
+    //Shorten a long post
+    if (message.content.length >= 400) {
+        let pastebinText = message.content;
+        const puppeteer = require('puppeteer');
+
+        async function tldr() {
+
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+
+            // await page.goto("https://pastebin.com/login");
+            // await page.click('body > div.wrap > div.header > div > div > div.header__right > div > a.btn-sign.sign-in');
+            // await page.waitForNavigation();
+            //=======================================
+            // couldn't get the login to work because puppeteer keeps getting timed out with cloudflare
+
+            await page.goto("https://pastebin.com/");
+            await page.click('#qc-cmp2-ui > div.qc-cmp2-footer.qc-cmp2-footer-overlay.qc-cmp2-footer-scrolled > div > button.sc-ifAKCX.ljEJIv'); //privacy agreement
+            await page.type('#postform-text', pastebinText);
+
+            //selects the expiration of paste to 10 minutes
+            await page.click('#select2-postform-expiration-container');
+            await page.click('#select2-postform-expiration-results > li:nth-child(3)');
+
+            //select the exposure as unlisted
+            await page.click('#select2-postform-status-container');
+            await page.click('#select2-postform-status-results > li:nth-child(2)');
+
+            //submit the paste
+            await page.click('#w0 > div.post-form__bottom > div.post-form__left > div.form-group.form-btn-container > button');
+            await page.waitForNavigation();
+
+            //retrieve the new url
+            const newUrl = await page.url();
+            // console.log(newUrl); //for testing
+
+            //close the puppet session
+            await browser.close();
+            await message.channel.send("tl;dr your message was too long! \r\nClick here to read the full message: " + newUrl);
+        }
+
+        tldr();
+        message.delete();
+
+        //print length of message
+        // console.log(pastebinText.length); //for testing
+    }
 });
 
 client.login(process.env.TOKEN);
