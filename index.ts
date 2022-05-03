@@ -127,133 +127,141 @@ client.on("messageCreate", (message) => {
     scrapeProduct("https://www.google.com/search?q=takeaways+near+" + postcode);
   }
   if (message.content.substring(0, 5) === "!wiki") {
-        let wikiSearch = message.content.slice(5);
+    let wikiSearch = message.content.slice(5);
 
-        const puppeteer = require('puppeteer');
+    const puppeteer = require("puppeteer");
 
-        async function scrapeProduct(url: string) {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-            await page.goto(url);
-            const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/p[2]');
-            const txt = await el.getProperty('textContent');
-            const rawTxt = await txt.jsonValue();
+    async function scrapeProduct(url: string) {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.goto(url);
+      const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/p[2]');
+      const txt = await el.getProperty("textContent");
+      const rawTxt = await txt.jsonValue();
 
-            let resp = rawTxt.replaceAll(/\[(.+?)\]/g, '');
+      let resp = rawTxt.replaceAll(/\[(.+?)\]/g, "");
 
-            browser.close();
+      browser.close();
 
-            message.reply({
-                content: resp,
-            });
-        }
-        wikiSearch = wikiSearch.split('.').join('x');
-
-        scrapeProduct("https://en.wikipedia.org/wiki/" + wikiSearch);
+      message.reply({
+        content: resp,
+      });
     }
-    if (message.content.substring(0, 5) === "!table") {
-      const puppeteer = require('puppeteer');
-      const { MessageEmbed, MessageAttachment, interaction } = require("discord.js");
-      async function table() {
-        const browser = await puppeteer.launch({
-          // args: [
-          //     '--window-size=1920,1080',
-          // ]
-        });
-        const page = await browser.newPage();
-        const url = 'https://www.premierleague.com/tables';
-        await page.goto(url);
-        await page.screenshot({
-          path: 'table.jpg',
-          clip: {
-              x: 0,
-              y: 275,
-              width: 800,
-              height: 1275
-          }
-        });
-        const attachment = new MessageAttachment('table.jpg');
-      
-        interaction.reply({ files: [attachment] });
-        browser.close();
-      }
-      table();
+    wikiSearch = wikiSearch.split(".").join("x");
+
+    scrapeProduct("https://en.wikipedia.org/wiki/" + wikiSearch);
+  }
+  if (message.content.substring(0, 6) === "!table") {
+    const puppeteer = require("puppeteer");
+    const {
+      MessageEmbed,
+      MessageAttachment,
+      interaction,
+    } = require("discord.js");
+    async function table() {
+      const browser = await puppeteer.launch({
+        // args: [
+        //     '--window-size=1920,1080',
+        // ]
+      });
+      const page = await browser.newPage();
+      const url = "https://www.premierleague.com/tables";
+      await page.goto(url);
+      await page.screenshot({
+        path: "table.jpg",
+        clip: {
+          x: 0,
+          y: 275,
+          width: 800,
+          height: 1275,
+        },
+      });
+      const attachment = new MessageAttachment("table.jpg");
+
+      message.reply({ files: [attachment] });
+      browser.close();
     }
-    if (message.content.substring(0, 5) === "!imdb") {
-      const { discord, Message, args } = require("discord.js");
-      const imdb = require("imdb-api");
-      async function imdbSearch() {
-        if(!args.length) {
-          return message.channel.send("Please give the name of movie or series")
-        }
-        
-        const imob = new imdb.Client({apiKey: "8318ba9e"});
-        
-        let movie = await imob.get({'name': args.join(" ")})
-        
-        let embed = new discord.MessageEmbed()
+    table();
+  }
+  if (message.content.substring(0, 5) === "!imdb") {
+    let val = message.content.slice(5);
+    const { discord, Message, MessageEmbed } = require("discord.js");
+    const imdb = require("imdb-api");
+    async function imdbSearch() {
+      const imob = new imdb.Client({ apiKey: "8318ba9e" });
+
+      let movie = await imob.get({ name: val });
+
+      let embed = new MessageEmbed()
         .setTitle(movie.title)
         .setColor("#ff2050")
         .setThumbnail(movie.poster)
         .setDescription(movie.plot)
         .setFooter({
-            text: `Ratings: ${movie.rating}`
+          text: `Ratings: ${movie.rating}`,
         })
         .addField("Country", movie.country, true)
         .addField("Languages", movie.languages, true)
         .addField("Type", movie.type, true);
-        
-        message.channel.send({ embeds: [embed] })
-      }
-      imdbSearch();
+
+      message.reply({ embeds: [embed] });
     }
-    //Shorten a long post
-    if (message.content.length >= 400) {
-        let pastebinText = message.content;
-        const puppeteer = require('puppeteer');
+    imdbSearch();
+  }
+  if (message.content.length >= 400) {
+    let pastebinText = message.content;
+    const puppeteer = require("puppeteer");
 
-        async function tldr() {
+    async function tldr() {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
 
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
+      // await page.goto("https://pastebin.com/login");
+      // await page.click('body > div.wrap > div.header > div > div > div.header__right > div > a.btn-sign.sign-in');
+      // await page.waitForNavigation();
+      //=======================================
+      // couldn't get the login to work because puppeteer keeps getting timed out with cloudflare
 
-            // await page.goto("https://pastebin.com/login");
-            // await page.click('body > div.wrap > div.header > div > div > div.header__right > div > a.btn-sign.sign-in');
-            // await page.waitForNavigation();
-            //=======================================
-            // couldn't get the login to work because puppeteer keeps getting timed out with cloudflare
+      await page.goto("https://pastebin.com/");
+      await page.click(
+        "#qc-cmp2-ui > div.qc-cmp2-footer.qc-cmp2-footer-overlay.qc-cmp2-footer-scrolled > div > button.sc-ifAKCX.ljEJIv"
+      ); //privacy agreement
+      await page.type("#postform-text", pastebinText);
 
-            await page.goto("https://pastebin.com/");
-            await page.click('#qc-cmp2-ui > div.qc-cmp2-footer.qc-cmp2-footer-overlay.qc-cmp2-footer-scrolled > div > button.sc-ifAKCX.ljEJIv'); //privacy agreement
-            await page.type('#postform-text', pastebinText);
+      //selects the expiration of paste to 10 minutes
+      await page.click("#select2-postform-expiration-container");
+      await page.click(
+        "#select2-postform-expiration-results > li:nth-child(3)"
+      );
 
-            //selects the expiration of paste to 10 minutes
-            await page.click('#select2-postform-expiration-container');
-            await page.click('#select2-postform-expiration-results > li:nth-child(3)');
+      //select the exposure as unlisted
+      await page.click("#select2-postform-status-container");
+      await page.click("#select2-postform-status-results > li:nth-child(2)");
 
-            //select the exposure as unlisted
-            await page.click('#select2-postform-status-container');
-            await page.click('#select2-postform-status-results > li:nth-child(2)');
+      //submit the paste
+      await page.click(
+        "#w0 > div.post-form__bottom > div.post-form__left > div.form-group.form-btn-container > button"
+      );
+      await page.waitForNavigation();
 
-            //submit the paste
-            await page.click('#w0 > div.post-form__bottom > div.post-form__left > div.form-group.form-btn-container > button');
-            await page.waitForNavigation();
+      //retrieve the new url
+      const newUrl = await page.url();
+      // console.log(newUrl); //for testing
 
-            //retrieve the new url
-            const newUrl = await page.url();
-            // console.log(newUrl); //for testing
-
-            //close the puppet session
-            await browser.close();
-            await message.channel.send("tl;dr your message was too long! \r\nClick here to read the full message: " + newUrl);
-        }
-
-        tldr();
-        message.delete();
-
-        //print length of message
-        // console.log(pastebinText.length); //for testing
+      //close the puppet session
+      await browser.close();
+      await message.channel.send(
+        "tl;dr your message was too long! \r\nClick here to read the full message: " +
+          newUrl
+      );
     }
+
+    tldr();
+    message.delete();
+
+    //print length of message
+    // console.log(pastebinText.length); //for testing
+  }
 });
 
 client.login(process.env.TOKEN);
